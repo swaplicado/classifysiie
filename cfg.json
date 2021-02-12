@@ -1,0 +1,9 @@
+{
+  "siieConnection": {
+    "userDb": "root",
+    "pswdDb": "msroot",
+    "hostDb": "localhost",
+    "portDb": "3306",
+    "nameDb": "erp_sc"
+  }
+}

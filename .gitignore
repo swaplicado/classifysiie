@@ -1,0 +1,5 @@
+*.class
+*.csv
+/nbproject
+/build
+build.xml
