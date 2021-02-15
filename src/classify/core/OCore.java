@@ -30,11 +30,11 @@ public class OCore {
     private String fileName;
     private HashMap<String, Integer> accs;
     
-    public void reclassify() throws CloneNotSupportedException, SQLException {
+    public void reclassify(final int year) throws CloneNotSupportedException, SQLException {
         OConfigReader cfgReader = new OConfigReader();
         OConfig cfg = cfgReader.readConfig(); 
         DbMySqlConnection c = new DbMySqlConnection(cfg.getSiieConnection().getNameDb(), cfg.getSiieConnection().getHostDb(), cfg.getSiieConnection().getPortDb(), cfg.getSiieConnection().getUserDb(), cfg.getSiieConnection().getPswdDb());
-        ArrayList<OTrnDps> documents = OProcessDocuments.getDocuments(c.connectMySQL(), 2021);
+        ArrayList<OTrnDps> documents = OProcessDocuments.getDocuments(c.connectMySQL(), year);
         
         fileName = OLog.writeFile(null, null, 0, null);
         accs = OProcessDocuments.getAccs(c.connectMySQL());

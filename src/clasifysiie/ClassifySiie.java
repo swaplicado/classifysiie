@@ -6,8 +6,8 @@
 package clasifysiie;
 
 import classify.core.OCore;
-import classify.core.OLog;
 import java.sql.SQLException;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,8 +66,23 @@ public class ClassifySiie {
      */
     public static void main(String[] args) {
         OCore core = new OCore();
-        try {            
-            core.reclassify();
+        try {
+            /* This reads the input provided by user
+                * using keyboard
+            */
+           Scanner scan = new Scanner(System.in);
+           System.out.print("Ingrese el año a reclasificar: ");
+
+           // This method reads the number provided using keyboard
+           int num = scan.nextInt();
+
+           // Closing Scanner after the use
+           scan.close();
+
+           // Displaying the number 
+           System.out.println("El año ingresado es: " + num);
+        
+            core.reclassify(num);
         }
         catch (CloneNotSupportedException ex) {
             Logger.getLogger(ClassifySiie.class.getName()).log(Level.SEVERE, null, ex);

@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 public class OProcessDocuments {
 
     /**
+     * Lee los documentos a clasificar partiendo de un año recibido
      * 
      * @param conn
      * @param year
@@ -105,7 +106,7 @@ public class OProcessDocuments {
     }
     
     /**
-     * 
+     * Obtiene los renglones del documento
      * 
      * @param conn
      * @param idYear
@@ -161,7 +162,7 @@ public class OProcessDocuments {
     }
     
     /**
-     * 
+     * Lee los renglones del documento con sus impuestos
      * 
      * @param conn
      * @param idYear
@@ -215,40 +216,14 @@ public class OProcessDocuments {
     }
 
     /**
-     * 
+     * obtiene el id_ety máximo de una póliza
      * 
      * @param conn
      * @param recEty
      * @return 
      */
     public static int getMaxRecs(Connection conn, ORecEty recEty) {
-        int[] dpsTp = null;
-
-//        if (docCat == ClassifySiie.CT_SALES) {
-//            dpsTp = ClassifySiie.FINS_TP_SYS_MOV_BPS_CUS;
-//        }
-//        else {
-//            dpsTp = ClassifySiie.FINS_TP_SYS_MOV_BPS_SUP;
-//        }
         
-        String filterSql = "";
-        
-//        if (docClass == ClassifySiie.TRNU_TP_DPS_SAL_CN[1]) {
-//            filterSql += " AND re.fid_dps_adj_doc_n = " + idDoc + " "
-//                        + " AND re.fid_dps_adj_year_n = " + idYear + " ";
-//        }
-//        else {
-//            filterSql += " AND re.fid_dps_doc_n = " + idDoc + " "
-//                        + " AND re.fid_dps_year_n = " + idYear + " ";
-//        }
-        
-//        if (ClassifySiie.TP_DOCUMENTS == tpAccMovs) {
-//            filterSql += "AND (re.fid_tp_acc_mov = " + 5 + " OR re.fid_tp_acc_mov = " + 4 + ")";
-//        }
-//        else {
-//            filterSql += "AND (re.fid_tp_acc_mov <> " + 5 + " AND re.fid_tp_acc_mov <> " + 4 + ")";
-//        }
-
         String sql = "SELECT "
                 + "    MAX(id_ety) as max_con "
                 + "   FROM "
@@ -256,13 +231,7 @@ public class OProcessDocuments {
                 + "        AND id_bkc = " + recEty.id_bkc + " "
                 + "        AND id_tp_rec = '" + recEty.id_tp_rec + "' "
                 + "        AND id_num = " + recEty.id_num + " "
-                + "        AND id_year = " + recEty.id_year + " "
-//                + "        AND r.dt <= '" + idYear + "-12-31'"
-//                + "        AND NOT r.b_del"
-//                + "        AND NOT re.b_del"
-//                + "        AND re.fid_ct_sys_mov_xxx = " + dpsTp[0]
-//                + "        AND re.fid_tp_sys_mov_xxx = " + dpsTp[1]
-                + " " + filterSql;
+                + "        AND id_year = " + recEty.id_year + " ";
         
         try {
             Statement st = conn.createStatement();
@@ -280,7 +249,7 @@ public class OProcessDocuments {
     }
     
     /**
-     * 
+     * leer recs asociados a un documento
      * 
      * @param conn
      * @param idYear
@@ -365,6 +334,18 @@ public class OProcessDocuments {
         return null;
     }
     
+    /**
+     * read rec_ety
+     * 
+     * @param conn
+     * @param idYear
+     * @param idPer
+     * @param idBkc
+     * @param idTpRec
+     * @param idNum
+     * @param idEty
+     * @return 
+     */
     public static ORecEty getRecEty(Connection conn, int idYear, int idPer, int idBkc, String idTpRec, int idNum, int idEty) {
         
         String sql = "SELECT * FROM fin_rec_ety WHERE id_year = " + idYear +
@@ -465,6 +446,7 @@ public class OProcessDocuments {
     }
     
     /**
+     * Insert new rec_ety
      * 
      * @param conn
      * @param recEty
@@ -635,6 +617,7 @@ public class OProcessDocuments {
     
     
     /**
+     * update b_del = true
      * 
      * @param conn
      * @param recEty
@@ -647,10 +630,6 @@ public class OProcessDocuments {
         String sql = "UPDATE fin_rec_ety " +
                     " SET " +
                     " b_del = " + recEty.b_del + " " +
-//                    (recEty.fid_acc == null ? " fid_acc = NULL " : " fid_acc = '" + recEty.fid_acc + "' ") + ", " +
-//                    "    fk_acc = " + recEty.fk_acc + "," +
-//                    "    fk_cc_n = " + (recEty.fk_cc_n > 0 ? recEty.fk_cc_n : "NULL") + ", " +
-//                    (recEty.fid_cc_n == null ? " fid_cc_n = NULL " : " fid_cc_n = '" + recEty.fid_cc_n + "' ") +
                     " WHERE " +
                     "    id_year = " + recEty.id_year + 
                     "        AND id_per = " + recEty.id_per + "" +
@@ -674,6 +653,13 @@ public class OProcessDocuments {
         }
     }
     
+    /**
+     * Leer cuentas contables para la obtención del pk
+     * 
+     * @param conn
+     * @return
+     * @throws SQLException 
+     */
     public static HashMap<String, Integer> getAccs(Connection conn) throws SQLException {
         HashMap<String, Integer> accs = new HashMap();
         
@@ -695,6 +681,19 @@ public class OProcessDocuments {
         }
     }
     
+    /**
+     * Leer configuración
+     * 
+     * @param idBizPartner
+     * @param idBizPartnerCategory
+     * @param idBkc
+     * @param dateStart
+     * @param idBizPartnerAccountType
+     * @param isDebit
+     * @param pkTax
+     * @param statement
+     * @return 
+     */
     public static SFinAccountConfigEntry readCfg(int idBizPartner, int idBizPartnerCategory, int idBkc, java.util.Date dateStart, int idBizPartnerAccountType, 
                         boolean isDebit, int[] pkTax, java.sql.Statement statement) {
         try {
@@ -710,7 +709,6 @@ public class OProcessDocuments {
                 accountConfigs = SFinAccountUtilities.obtainBizPartnerAccountConfigs(idBizPartner, idBizPartnerCategory, idBkc, dateStart, idBizPartnerAccountType, isDebit, null, statement);
             }
             
-//            return accountConfigs != null ? ! accountConfigs.isEmpty() ? accountConfigs.get(0) : null : null;
             return accountConfigs.get(0);
         }
         catch (Exception ex) {
