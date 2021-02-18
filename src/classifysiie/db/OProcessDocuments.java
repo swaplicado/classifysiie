@@ -72,7 +72,7 @@ public class OProcessDocuments {
                 + "    OR td.fid_ct_dps = " + SDataConstantsSys.TRNS_CT_DPS_SAL  + ") "
                 + "    AND (td.fid_cl_dps = " + SDataConstantsSys.TRNS_CL_DPS_DOC + " "
                 + "    OR td.fid_cl_dps = " + SDataConstantsSys.TRNS_CL_DPS_ADJ + ") "
-//                + "    AND td.id_doc = " + 963 + " "
+//                + "    AND td.id_doc = " + 66 + " "
                 + "ORDER BY td.id_year DESC, td.id_doc ASC;";
 
         try {
@@ -277,7 +277,8 @@ public class OProcessDocuments {
         }
         else {
             filterSql += " AND re.fid_dps_doc_n = " + idDoc + " "
-                        + " AND re.fid_dps_year_n = " + idYear + " ";
+                        + " AND re.fid_dps_year_n = " + idYear + " "
+                        + " AND re.fid_dps_adj_doc_n IS NULL ";
         }
         
         if (ClassifySiie.TP_DOCUMENTS == tpAccMovs) {
@@ -694,12 +695,14 @@ public class OProcessDocuments {
      * @param statement
      * @return 
      */
-    public static SFinAccountConfigEntry readCfg(int idBizPartner, int idBizPartnerCategory, int idBkc, java.util.Date dateStart, int idBizPartnerAccountType, 
+    public static Object[] readCfg(int idBizPartner, int idBizPartnerCategory, int idBkc, java.util.Date dateStart, int idBizPartnerAccountType, 
                         boolean isDebit, int[] pkTax, java.sql.Statement statement) {
         try {
+            boolean isDefault = false;
             if (pkTax != null) {
                 if (pkTax[0] == 0) {
                     pkTax = null;
+                    isDefault = true;
                 }
             }
             
@@ -707,9 +710,10 @@ public class OProcessDocuments {
             
             if (pkTax != null && (accountConfigs == null || accountConfigs.isEmpty())) {
                 accountConfigs = SFinAccountUtilities.obtainBizPartnerAccountConfigs(idBizPartner, idBizPartnerCategory, idBkc, dateStart, idBizPartnerAccountType, isDebit, null, statement);
+                isDefault = true;
             }
             
-            return accountConfigs.get(0);
+            return new Object[] { accountConfigs.get(0), isDefault };
         }
         catch (Exception ex) {
             Logger.getLogger(OProcessDocuments.class.getName()).log(Level.SEVERE, null, ex);

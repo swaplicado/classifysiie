@@ -5,8 +5,7 @@
  */
 package classify.core;
 
-import com.opencsv.CSVWriter;
-import java.io.File;
+import clasifysiie.ClassifySiie;
 import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -40,19 +39,44 @@ public class OLog {
 //            CSVWriter mCsvWriter = new CSVWriter(fileWriter);
 
             if (fileName == null) {
-                String header = "operacion," + "id_year," + "id_per," + "id_bkc," + "id_tp_rec," + "id_num," + "id_ety," + "status";
+                String header = 
+                                "id_year," + 
+                                "id_per," + 
+                                "id_bkc," + 
+                                "id_tp_rec," + 
+                                "id_num," + 
+                                "id_ety," + 
+                                "debit," + 
+                                "credit," + 
+                                "debit_cur," + 
+                                "credit_cur," + 
+                                "fid_tax_bas_n," + 
+                                "fid_tax_n," + 
+                                "fid_acc," + 
+                                "fk_acc," + 
+                                "operacion," + 
+                                "status";
                 //Write the CSV file header
                 fileWriter.append(header);
             }
             else {
                 if (recEty != null) {
-                    String line = op + "," + 
+                    String line = 
                         recEty.id_year + "," +
                         recEty.id_per + "," +
                         recEty.id_bkc + "," +
-                        "" + recEty.id_tp_rec + "," +
+                        recEty.id_tp_rec + "," +
                         recEty.id_num + "," +
                         recEty.id_ety + "," +
+                        recEty.debit + "," +
+                        recEty.credit + "," +
+                        recEty.debit_cur + "," +
+                        recEty.credit_cur + "," +
+                        recEty.fid_tax_bas_n + "," +
+                        recEty.fid_tax_n + "," +
+                        recEty.fid_acc + "," +
+                        recEty.fk_acc + "," +
+                        (op == ClassifySiie.INSERT ? "INSERT" : "DELETE") + "," +
                         "" + status + "";
                     
                     fileWriter.append(line);
