@@ -12,7 +12,6 @@ import classify.core.OFinRec;
 import classify.core.OLog;
 import classify.core.ORecEty;
 import classify.core.OTrnDps;
-import erp.data.SDataConstantsSys;
 import erp.mfin.data.SFinAccountConfigEntry;
 import erp.mfin.data.SFinAccountUtilities;
 import erp.mod.SModSysConsts;
@@ -42,56 +41,109 @@ public class OProcessDocuments {
      * @return 
      */
     public static ArrayList<OTrnDps> getDocuments(Connection conn, int year) {
-
-        String sql = "SELECT "
-                + "(SELECT "
-                + "            COUNT(DISTINCT id_tax)"
-                + "        FROM"
-                + "            trn_dps_ety_tax etytax"
-                + "        WHERE"
-                + "        fid_tp_tax = " + SModSysConsts.FINS_TP_TAX_CHARGED
-                + "           AND td.id_year = etytax.id_year"
-                + "                AND td.id_doc = etytax.id_doc) AS taxes,"
-                + "(SELECT "
-                + "            COUNT(*)"
-                + "        FROM"
-                + "            trn_dps_ety ety"
-                + "        WHERE"
-                + "        ety.b_del = FALSE "
-                + "           AND td.id_year = ety.id_year"
-                + "                AND td.id_doc = ety.id_doc) AS etis,"
-                + "    td.* "
-                + "FROM "
-                + "    trn_dps td "
-                + "WHERE "
-                + "    td.b_del = FALSE "
-//                + "    AND td.dt <= '" + year + "-12-31'"
-                + "    AND td.id_year = " + year + " "
-                + "    AND td.fid_st_dps <> " + SModSysConsts.TRNS_ST_DPS_VAL_REPL + " "
-                + "    AND (td.fid_ct_dps = " + SDataConstantsSys.TRNS_CT_DPS_PUR + " "
-                + "    OR td.fid_ct_dps = " + SDataConstantsSys.TRNS_CT_DPS_SAL  + ") "
-                + "    AND (td.fid_cl_dps = " + SDataConstantsSys.TRNS_CL_DPS_DOC + " "
-                + "    OR td.fid_cl_dps = " + SDataConstantsSys.TRNS_CL_DPS_ADJ + ") "
-//                + "    AND td.id_doc = " + 66 + " "
-                + "ORDER BY td.id_year DESC, td.id_doc ASC;";
-
+        
+        /**
+         * Obtención de documentos de póliza
+         */
+        
+        String recDocsSql = "SELECT " +
+                        "   DISTINCT CONCAT_WS('_', fid_dps_doc_n, fid_dps_year_n) AS doc_key " +
+                        "FROM " +
+                        "    fin_rec_ety " +
+                        "WHERE " +
+                        "    id_year = " + year + " AND fid_dps_doc_n > 0" +
+                        "        AND fid_dps_adj_doc_n IS NULL" +
+                        "        AND NOT b_del;";
+        
+        StringBuffer docs = new StringBuffer("");
+        
         try {
             Statement st = conn.createStatement();
-            ResultSet res = st.executeQuery(sql);
+            ResultSet res = st.executeQuery(recDocsSql);
+
+            while (res.next()) {
+                docs.append("'");
+                docs.append(res.getString("doc_key"));
+                docs.append("'");
+                docs.append(",");
+            }
+        }
+        catch (SQLException ex) {
+
+        }
+        
+        /**
+         * Obtención de documentos de ajuste de póliza
+         */
+        
+        String recAdjSql = "SELECT " +
+                        "   DISTINCT CONCAT_WS('_', fid_dps_adj_doc_n, fid_dps_adj_year_n) AS doc_key " +
+                        "FROM " +
+                        "    fin_rec_ety " +
+                        "WHERE " +
+                        "    id_year = " + year + " " +
+                        "        AND fid_dps_adj_doc_n > 0 " +
+                        "        AND NOT b_del;";
+        
+        try {
+            Statement st1 = conn.createStatement();
+            ResultSet res1 = st1.executeQuery(recAdjSql);
+
+            while (res1.next()) {
+                docs.append("'");
+                docs.append(res1.getString("doc_key"));
+                docs.append("'");
+                docs.append(",");
+            }
+            
+            if (docs.length() > 1) {
+                docs.deleteCharAt(docs.length() - 1);
+            }
+        }
+        catch (SQLException ex) {
+
+        }
+
+        String sql = "SELECT " +
+                "    (SELECT " +
+                "            COUNT(DISTINCT id_tax) " +
+                "        FROM " +
+                "            trn_dps_ety_tax etytax " +
+                "        WHERE " +
+                "            fid_tp_tax = " + SModSysConsts.FINS_TP_TAX_CHARGED +
+                "                AND td.id_year = etytax.id_year " +
+                "                AND td.id_doc = etytax.id_doc) AS taxes, " +
+                "(SELECT " +
+                "            COUNT(*) " +
+                "        FROM " +
+                "            trn_dps_ety ety " +
+                "        WHERE " +
+                "            ety.b_del = FALSE " +
+                "                AND td.id_year = ety.id_year " +
+                "                AND td.id_doc = ety.id_doc) AS etis, " +
+                "    td.* " +
+                "FROM " +
+                "    trn_dps td " +
+                "WHERE " +
+                "    CONCAT_WS('_', td.id_doc, td.id_year) IN (" + docs.toString() + ");  ";
+
+        try {
+            Statement st2 = conn.createStatement();
+            ResultSet res2 = st2.executeQuery(sql);
 
             ArrayList<OTrnDps> dpss = new ArrayList();
             OTrnDps dps = null;
-            while (res.next()) {
+            while (res2.next()) {
                 dps = new OTrnDps();
                 
-                dps.setIdDoc(res.getInt("id_doc"));
-                dps.setIdYear(res.getInt("id_year"));
-                dps.setDt(res.getDate("dt"));
-                dps.setTaxesCount(res.getInt("taxes"));
-                dps.setEtis(res.getInt("etis"));
-                dps.setCatDps(res.getInt("fid_ct_dps"));
-                dps.setClassDps(res.getInt("fid_cl_dps"));
-                dps.setIdBp(res.getInt("fid_bp_r"));
+                dps.setIdDoc(res2.getInt("id_doc"));
+                dps.setIdYear(res2.getInt("id_year"));
+                dps.setDt(res2.getDate("dt"));
+                dps.setTaxesCount(res2.getInt("taxes"));
+                dps.setEtis(res2.getInt("etis"));
+                dps.setCatDps(res2.getInt("fid_ct_dps"));
+                dps.setClassDps(res2.getInt("fid_cl_dps"));
+                dps.setIdBp(res2.getInt("fid_bp_r"));
 
                 dpss.add(dps);
             }
@@ -298,8 +350,8 @@ public class OProcessDocuments {
                 + "        AND r.id_bkc = re.id_bkc "
                 + "        AND r.id_tp_rec = re.id_tp_rec "
                 + "        AND r.id_num = re.id_num "
-                + "        AND r.id_year = " + idYear + " "
-                + "        AND r.dt <= '" + idYear + "-12-31'"
+//                + "        AND r.id_year = " + idYear + " "
+//                + "        AND r.dt <= '" + idYear + "-12-31'"
                 + "        AND NOT r.b_del"
                 + "        AND NOT re.b_del"
                 + "        AND re.fid_ct_sys_mov_xxx = " + dpsTp[0]
@@ -624,6 +676,7 @@ public class OProcessDocuments {
      * @param recEty
      * @param fileName
      * @return 
+     * @throws java.sql.SQLException 
      */
     public static boolean deleteRecEty(Connection conn, ORecEty recEty, String fileName) throws SQLException {
         
