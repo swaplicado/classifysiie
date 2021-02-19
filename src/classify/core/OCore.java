@@ -215,13 +215,15 @@ public class OCore {
                     
                     accCfg = (SFinAccountConfigEntry) result[0];
                     
-                    oRecEty.fk_acc = accs.get(accCfg.getAccountId());
-                    oRecEty.fid_acc = accCfg.getAccountId();
-                    oRecEty.fid_cc_n = accCfg.getCostCenterId();
-                    oRecEty.fid_tax_bas_n = etyTax.getTaxBas();
-                    oRecEty.fid_tax_n = etyTax.getTax();
-                    
-                    isNewEty = true;
+                    if (! oRecEty.fid_acc.equals(accCfg.getAccountId()) || oRecEty.fid_tax_bas_n != etyTax.getTaxBas() || oRecEty.fid_tax_n != etyTax.getTax()) {
+                        oRecEty.fk_acc = accs.get(accCfg.getAccountId());
+                        oRecEty.fid_acc = accCfg.getAccountId();
+                        oRecEty.fid_cc_n = accCfg.getCostCenterId();
+                        oRecEty.fid_tax_bas_n = etyTax.getTaxBas();
+                        oRecEty.fid_tax_n = etyTax.getTax();
+
+                        isNewEty = true;
+                    }
                     
                     situation = ClassifySiie.ONE_TAX;
                 }
@@ -313,19 +315,21 @@ public class OCore {
                         
                         ORecEty oPayRecEty = (ORecEty) payRecEty.clone();
                         
-                        oPayRecEty.fk_acc = accs.get(accCfgn.getAccountId());
-                        oPayRecEty.fid_acc = accCfgn.getAccountId();
-                        oPayRecEty.fid_cc_n = accCfgn.getCostCenterId();
-                        oPayRecEty.fid_tax_bas_n = etyTax.getTaxBas();
-                        oPayRecEty.fid_tax_n = etyTax.getTax();
-                        
-                        payRecEty.b_del = true;
-                        OProcessDocuments.deleteRecEty(c.connectMySQL(), payRecEty, fileName);
-                        
-                        // consultar el consecutivo más alto de la póliza para hacer la separación por impuesto
-                        int max = OProcessDocuments.getMaxRecs(c.connectMySQL(), payRecEty);
-                        oPayRecEty.id_ety = ++max;
-                        OProcessDocuments.insertRecEty(c.connectMySQL(), oPayRecEty, fileName);
+                        if (! oPayRecEty.fid_acc.equals(accCfgn.getAccountId()) || oPayRecEty.fid_tax_bas_n != etyTax.getTaxBas() || oPayRecEty.fid_tax_n != etyTax.getTax()) {
+                            oPayRecEty.fk_acc = accs.get(accCfgn.getAccountId());
+                            oPayRecEty.fid_acc = accCfgn.getAccountId();
+                            oPayRecEty.fid_cc_n = accCfgn.getCostCenterId();
+                            oPayRecEty.fid_tax_bas_n = etyTax.getTaxBas();
+                            oPayRecEty.fid_tax_n = etyTax.getTax();
+
+                            payRecEty.b_del = true;
+                            OProcessDocuments.deleteRecEty(c.connectMySQL(), payRecEty, fileName);
+
+                            // consultar el consecutivo más alto de la póliza para hacer la separación por impuesto
+                            int max = OProcessDocuments.getMaxRecs(c.connectMySQL(), payRecEty);
+                            oPayRecEty.id_ety = ++max;
+                            OProcessDocuments.insertRecEty(c.connectMySQL(), oPayRecEty, fileName);
+                        }
                     }
                     break;
                     

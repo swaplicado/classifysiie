@@ -19,7 +19,8 @@ public class ClassifyComplement {
     
     public static void main(String[] args) {
         try {
-        Scanner scan = new Scanner(System.in);
+            
+            Scanner scan = new Scanner(System.in);
             System.out.print("Ingrese el año a reclasificar: ");
 
             // This method reads the number provided using keyboard
@@ -30,6 +31,7 @@ public class ClassifyComplement {
             OProcessComplement comp = new OProcessComplement();
 
             comp.processComplement(num);
+            
         } catch (SQLException ex) {
             Logger.getLogger(ClassifyComplement.class.getName()).log(Level.SEVERE, null, ex);
         } catch (CloneNotSupportedException ex) {
