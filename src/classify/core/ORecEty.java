@@ -5,7 +5,7 @@
  */
 package classify.core;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  *
@@ -84,6 +84,16 @@ public class ORecEty implements Cloneable {
     public Date ts_new;
     public Date ts_edit;
     public Date ts_del;
+    
+    public Date dt;
+
+    public Date getDt() {
+        return dt;
+    }
+
+    public void setDt(Date dt) {
+        this.dt = dt;
+    }
     
     // Overriding clone() method 
     // by simply calling Object class 

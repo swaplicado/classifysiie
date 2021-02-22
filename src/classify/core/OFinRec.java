@@ -5,6 +5,8 @@
  */
 package classify.core;
 
+import java.util.Date;
+
 /**
  *
  * @author Edwin Carmona
@@ -16,6 +18,7 @@ public class OFinRec {
     String idTpRec;
     int idNum;
     int idEty;
+    Date dt;
 
     public int getIdYear() {
         return idYear;
@@ -64,6 +67,12 @@ public class OFinRec {
     public void setIdEty(int idEty) {
         this.idEty = idEty;
     }
-    
-    
+
+    public Date getDt() {
+        return dt;
+    }
+
+    public void setDt(Date dt) {
+        this.dt = dt;
+    }
 }

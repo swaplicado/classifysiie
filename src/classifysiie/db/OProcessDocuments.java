@@ -357,7 +357,8 @@ public class OProcessDocuments {
                 + "        AND NOT re.b_del"
                 + "        AND re.fid_ct_sys_mov_xxx = " + dpsTp[0]
                 + "        AND re.fid_tp_sys_mov_xxx = " + dpsTp[1]
-                + " " + filterSql;
+                + " " + filterSql
+                + " ORDER BY r.id_year ASC, r.dt ASC;";
         
         try {
             Statement st = conn.createStatement();
@@ -375,6 +376,7 @@ public class OProcessDocuments {
                 rec.setIdTpRec(res.getString("re.id_tp_rec"));
                 rec.setIdNum(res.getInt("re.id_num"));
                 rec.setIdEty(res.getInt("re.id_ety"));
+                rec.setDt(res.getDate("r.dt"));
 
                 recs.add(rec);
             }
