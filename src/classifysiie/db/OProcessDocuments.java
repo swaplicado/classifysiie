@@ -125,7 +125,8 @@ public class OProcessDocuments {
                 "FROM " +
                 "    trn_dps td " +
                 "WHERE " +
-                "    CONCAT_WS('_', td.id_doc, td.id_year) IN (" + docs.toString() + ");  ";
+//                "    CONCAT_WS('_', td.id_doc, td.id_year) IN (" + docs.toString() + ");  ";
+                "    CONCAT_WS('_', td.id_doc, td.id_year) IN ('494_2014');";
 
         try {
             Statement st2 = conn.createStatement();
@@ -588,7 +589,7 @@ public class OProcessDocuments {
                         "'" + recEty.id_tp_rec + "' ," +
                         "" + recEty.id_num + " ," +
                         "" + recEty.id_ety + " ," +
-                        "'" + recEty.concept + "' ," +
+                        "'" + recEty.concept.replace("'", "") + "' ," +
                         "'" + recEty.ref + "' ," +
                         "" + recEty.b_ref_tax + " ," +
                         "" + recEty.debit + " ," +

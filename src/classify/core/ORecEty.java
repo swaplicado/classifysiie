@@ -92,7 +92,7 @@ public class ORecEty implements Cloneable {
     protected Object clone() 
         throws CloneNotSupportedException 
     { 
-        return super.clone(); 
+        return super.clone();
     }
     
 }

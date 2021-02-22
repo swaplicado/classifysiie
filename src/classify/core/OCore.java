@@ -71,7 +71,6 @@ public class OCore {
                         amounts.put(key, new double[] { ety.getTotal(), ety.getTotalCur() } );
                     }
                 }
-
                 
                 OFinRec etyTax = recs.get(0);
                 ORecEty recEty = OProcessDocuments.getRecEty(c.connectMySQL(), etyTax.getIdYear(), etyTax.getIdPer(), etyTax.getIdBkc(), etyTax.getIdTpRec(), etyTax.getIdNum(), etyTax.getIdEty());
