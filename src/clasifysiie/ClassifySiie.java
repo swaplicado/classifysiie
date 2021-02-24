@@ -71,17 +71,17 @@ public class ClassifySiie {
             /* This reads the input provided by user
                 * using keyboard
             */
-           Scanner scan = new Scanner(System.in);
-           System.out.print("Ingrese el año a reclasificar: ");
+            Scanner scan = new Scanner(System.in);
+            System.out.print("Ingrese el año a reclasificar: ");
 
-           // This method reads the number provided using keyboard
-           int num = scan.nextInt();
+            // This method reads the number provided using keyboard
+            int num = scan.nextInt();
 
-           // Closing Scanner after the use
-           scan.close();
+            // Closing Scanner after the use
+            scan.close();
 
-           // Displaying the number 
-           System.out.println("El año ingresado es: " + num);
+            // Displaying the number 
+            System.out.println("El año ingresado es: " + num);
         
             core.reclassify(num);
         }

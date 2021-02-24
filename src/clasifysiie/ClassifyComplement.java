@@ -21,7 +21,7 @@ public class ClassifyComplement {
         try {
             
             Scanner scan = new Scanner(System.in);
-            System.out.print("Ingrese el año a reclasificar: ");
+            System.out.print("Ingrese el año a reclasificar (complementario): ");
 
             // This method reads the number provided using keyboard
             int num = scan.nextInt();
@@ -29,12 +29,17 @@ public class ClassifyComplement {
             // Closing Scanner after the use
             scan.close();
             OProcessComplement comp = new OProcessComplement();
-
-            comp.processComplement(num);
             
-        } catch (SQLException ex) {
+            String ctaMCus = "1120-0000-0000";
+            String ctaMSup = "2105-0000-0000";
+
+            comp.processComplement(num, ctaMCus, ctaMSup);
+            
+        }
+        catch (SQLException ex) {
             Logger.getLogger(ClassifyComplement.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (CloneNotSupportedException ex) {
+        }
+        catch (CloneNotSupportedException ex) {
             Logger.getLogger(ClassifyComplement.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

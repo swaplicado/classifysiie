@@ -17,8 +17,6 @@ import erp.mfin.utils.SMfinUtils;
 import erp.mod.SModSysConsts;
 import erp.mod.trn.db.STrnUtils;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,8 +39,6 @@ public class OCore {
         
         fileName = OLog.writeFile(null, null, 0, null);
         accs = OProcessDocuments.getAccs(c.connectMySQL());
-        
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
         
         int situation = 0;
         SFinAccountConfigEntry accCfg;
@@ -182,75 +178,76 @@ public class OCore {
                 }
             }
             else {
-                if (recs.size() > 1) {
+                if (recs.size() > 1 && document.getClassDps() != ClassifySiie.TRNU_TP_DPS_SAL_CN[1]) {
                     continue;
                 }
                 
-                boolean isNewEty = false;
-                OFinRec etyRec = recs.get(0);
-                ORecEty oRecEtyOriginal = OProcessDocuments.getRecEty(c.connectMySQL(), etyRec.getIdYear(), etyRec.getIdPer(), etyRec.getIdBkc(), etyRec.getIdTpRec(), etyRec.getIdNum(), etyRec.getIdEty());
-                ORecEty oRecEty = (ORecEty) oRecEtyOriginal.clone();
-                
-                // si el documento no tiene impuestos
-                if (etyTaxes.isEmpty()) {
-                    // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
-                    Object[] result = OProcessDocuments.readCfg(
-                            document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), etyRec.getIdBkc(),
-                            document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), null, (c.connectMySQL()).createStatement());
+                for (OFinRec etyRec : recs) {
+                    boolean isNewEty = false;
+                    ORecEty oRecEtyOriginal = OProcessDocuments.getRecEty(c.connectMySQL(), etyRec.getIdYear(), etyRec.getIdPer(), etyRec.getIdBkc(), etyRec.getIdTpRec(), etyRec.getIdNum(), etyRec.getIdEty());
+                    ORecEty oRecEty = (ORecEty) oRecEtyOriginal.clone();
 
-                    if (result == null) {
-                        return;
+                    // si el documento no tiene impuestos
+                    if (etyTaxes.isEmpty()) {
+                        // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
+                        Object[] result = OProcessDocuments.readCfg(
+                                document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), etyRec.getIdBkc(),
+                                document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), null, (c.connectMySQL()).createStatement());
+
+                        if (result == null) {
+                            return;
+                        }
+
+                        accCfg = (SFinAccountConfigEntry) result[0];
+
+                        if (! oRecEty.fid_acc.equals(accCfg.getAccountId())) {
+                            oRecEty.fk_acc = accs.get(accCfg.getAccountId());
+                            oRecEty.fid_acc = accCfg.getAccountId();
+                            oRecEty.fid_cc_n = accCfg.getCostCenterId();
+
+                            isNewEty = true;
+                        }
+
+                        situation = ClassifySiie.NO_TAXES;
                     }
-                    
-                    accCfg = (SFinAccountConfigEntry) result[0];
-                    
-                    if (! oRecEty.fid_acc.equals(accCfg.getAccountId())) {
-                        oRecEty.fk_acc = accs.get(accCfg.getAccountId());
-                        oRecEty.fid_acc = accCfg.getAccountId();
-                        oRecEty.fid_cc_n = accCfg.getCostCenterId();
-                        
-                        isNewEty = true;
+                    // si el documento solo tiene un impuesto
+                    else {
+                        OEtyTax etyTax = etyTaxes.get(0);
+                        int[] pkTax = new int[] { etyTax.getTaxBas(), etyTax.getTax() };
+                        // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
+                        Object[] result = OProcessDocuments.readCfg(
+                                document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), etyRec.getIdBkc(),
+                                document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), pkTax, (c.connectMySQL()).createStatement());
+
+                        if (result == null) {
+                            return;
+                        }
+
+                        accCfg = (SFinAccountConfigEntry) result[0];
+
+                        if (! oRecEty.fid_acc.equals(accCfg.getAccountId()) || oRecEty.fid_tax_bas_n != etyTax.getTaxBas() || oRecEty.fid_tax_n != etyTax.getTax()) {
+                            oRecEty.fk_acc = accs.get(accCfg.getAccountId());
+                            oRecEty.fid_acc = accCfg.getAccountId();
+                            oRecEty.fid_cc_n = accCfg.getCostCenterId();
+                            oRecEty.fid_tax_bas_n = etyTax.getTaxBas();
+                            oRecEty.fid_tax_n = etyTax.getTax();
+
+                            isNewEty = true;
+                        }
+
+                        situation = ClassifySiie.ONE_TAX;
                     }
-                    
-                    situation = ClassifySiie.NO_TAXES;
-                }
-                // si el documento solo tiene un impuesto
-                else {
-                    OEtyTax etyTax = etyTaxes.get(0);
-                    int[] pkTax = new int[] { etyTax.getTaxBas(), etyTax.getTax() };
-                    // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
-                    Object[] result = OProcessDocuments.readCfg(
-                            document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), etyRec.getIdBkc(),
-                            document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), pkTax, (c.connectMySQL()).createStatement());
 
-                    if (result == null) {
-                        return;
+                    if (isNewEty) {
+                        // consultar el consecutivo más alto de la póliza para hacer la separación por impuesto
+                        int max = OProcessDocuments.getMaxRecs(c.connectMySQL(), oRecEty);
+
+                        oRecEty.id_ety = ++max;
+                        OProcessDocuments.insertRecEty(c.connectMySQL(), oRecEty, fileName);
+
+                        oRecEtyOriginal.b_del = true;
+                        OProcessDocuments.deleteRecEty(c.connectMySQL(), oRecEtyOriginal, fileName);
                     }
-                    
-                    accCfg = (SFinAccountConfigEntry) result[0];
-                    
-                    if (! oRecEty.fid_acc.equals(accCfg.getAccountId()) || oRecEty.fid_tax_bas_n != etyTax.getTaxBas() || oRecEty.fid_tax_n != etyTax.getTax()) {
-                        oRecEty.fk_acc = accs.get(accCfg.getAccountId());
-                        oRecEty.fid_acc = accCfg.getAccountId();
-                        oRecEty.fid_cc_n = accCfg.getCostCenterId();
-                        oRecEty.fid_tax_bas_n = etyTax.getTaxBas();
-                        oRecEty.fid_tax_n = etyTax.getTax();
-
-                        isNewEty = true;
-                    }
-                    
-                    situation = ClassifySiie.ONE_TAX;
-                }
-                
-                if (isNewEty) {
-                    // consultar el consecutivo más alto de la póliza para hacer la separación por impuesto
-                    int max = OProcessDocuments.getMaxRecs(c.connectMySQL(), oRecEty);
-
-                    oRecEty.id_ety = ++max;
-                    OProcessDocuments.insertRecEty(c.connectMySQL(), oRecEty, fileName);
-
-                    oRecEtyOriginal.b_del = true;
-                    OProcessDocuments.deleteRecEty(c.connectMySQL(), oRecEtyOriginal, fileName);
                 }
             }
             
@@ -367,34 +364,30 @@ public class OCore {
 
                     case ClassifySiie.SEVERAL_TAXES:
                         // tiene una o varias partidas con varios impuestos (diferente cada una)
-                        ArrayList<ORecEty> pays = new ArrayList();
                         // recorrer los renglones de los pagos que se han hecho a la factura
                         // se borran estos renglones para disntribuir los pagos por impuestos
                         for (OFinRec payFinRec : yearPayRecs) {
                             ORecEty payRecEty = OProcessDocuments.getRecEty(c.connectMySQL(), payFinRec.getIdYear(), payFinRec.getIdPer(), payFinRec.getIdBkc(), payFinRec.getIdTpRec(), payFinRec.getIdNum(), payFinRec.getIdEty());
                             ORecEty oPayRecEty = (ORecEty) payRecEty.clone();
-
-                            oPayRecEty.setDt(payFinRec.getDt());
-                            pays.add(oPayRecEty);
-
                             payRecEty.b_del = true;
                             OProcessDocuments.deleteRecEty(c.connectMySQL(), payRecEty, fileName);
-                        }
 
-                        for (ORecEty newRecEty : pays) {
+                            oPayRecEty.setDt(payFinRec.getDt());
+                            
                             ArrayList<SBalanceTax> newBalances = SMfinUtils.getBalanceByTax(c.connectMySQL(), document.getIdDoc(), document.getIdYear(), recYear, "", 
                                     STrnUtils.getBizPartnerCategoryId(document.getCatDps()) == SDataConstantsSys.BPSS_CT_BP_SUP ? SDataConstantsSys.FINS_TP_SYS_MOV_BPS_SUP[0] : SDataConstantsSys.FINS_TP_SYS_MOV_BPS_CUS[0], 
                                     STrnUtils.getBizPartnerCategoryId(document.getCatDps()) == SDataConstantsSys.BPSS_CT_BP_SUP ? SDataConstantsSys.FINS_TP_SYS_MOV_BPS_SUP[1] : SDataConstantsSys.FINS_TP_SYS_MOV_BPS_CUS[1]);
 
-                            double creditCur = newRecEty.credit_cur;
-                            double credit = newRecEty.credit;
-                            double debitCur = newRecEty.debit_cur;
-                            double debit = newRecEty.debit;
+                            double creditCur = oPayRecEty.credit_cur;
+                            double credit = oPayRecEty.credit;
+                            double debitCur = oPayRecEty.debit_cur;
+                            double debit = oPayRecEty.debit;
 
+                            boolean wasInserted = false;
                             // consultar el consecutivo más alto de la póliza para hacer la separación por impuesto
-                            int max = OProcessDocuments.getMaxRecs(c.connectMySQL(), newRecEty);
+                            int max = OProcessDocuments.getMaxRecs(c.connectMySQL(), oPayRecEty);
                             for (SBalanceTax newBalance : newBalances) {
-                                ORecEty balanceEty = (ORecEty) newRecEty.clone();
+                                ORecEty balanceEty = (ORecEty) oPayRecEty.clone();
                                 balanceEty.id_ety = ++max;
                                 
                                 newBalance.setBalanceCurrency(Math.abs(newBalance.getBalanceCurrency()));
@@ -448,14 +441,15 @@ public class OCore {
                                 balanceEty.fid_tax_n = newBalance.getTaxPk()[1];
 
                                 OProcessDocuments.insertRecEty(c.connectMySQL(), balanceEty, fileName);
+                                wasInserted = true;
                             }
                             
                             /**
                              * Cuando el documento ya no tiene saldo pero hay renglones en la póliza solo se mandan a la configuración por default
                              * pero se queda el mismo renglón
                              */
-                            if (newBalances.isEmpty()) {
-                                ORecEty balanceEty = (ORecEty) newRecEty.clone();
+                            if (newBalances.isEmpty() || ! wasInserted) {
+                                ORecEty balanceEty = (ORecEty) oPayRecEty.clone();
                                 balanceEty.id_ety = ++max;
                                 // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
                                 Object[] result2 = OProcessDocuments.readCfg(

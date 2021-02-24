@@ -82,6 +82,7 @@ public class OProcessDocuments {
                         "    fin_rec_ety " +
                         "WHERE " +
                         "    id_year = " + year + " " +
+//                        "    id_year = 2018 AND fid_dps_adj_doc_n = 1037 " +
                         "        AND fid_dps_adj_doc_n > 0 " +
                         "        AND NOT b_del;";
         
@@ -125,8 +126,8 @@ public class OProcessDocuments {
                 "FROM " +
                 "    trn_dps td " +
                 "WHERE " +
-//                "    CONCAT_WS('_', td.id_doc, td.id_year) IN (" + docs.toString() + ");  ";
-                "    CONCAT_WS('_', td.id_doc, td.id_year) IN ('494_2014');";
+                "    CONCAT_WS('_', td.id_doc, td.id_year) IN (" + docs.toString() + ");  ";
+//                "    CONCAT_WS('_', td.id_doc, td.id_year) IN ('5009_2018', '5864_2018');  ";
 
         try {
             Statement st2 = conn.createStatement();
@@ -357,6 +358,7 @@ public class OProcessDocuments {
                 + "        AND NOT re.b_del"
                 + "        AND re.fid_ct_sys_mov_xxx = " + dpsTp[0]
                 + "        AND re.fid_tp_sys_mov_xxx = " + dpsTp[1]
+                + "        AND (re.fid_acc LIKE '1120%' OR re.fid_acc LIKE '2105%') "
                 + " " + filterSql
                 + " ORDER BY r.id_year ASC, r.dt ASC;";
         

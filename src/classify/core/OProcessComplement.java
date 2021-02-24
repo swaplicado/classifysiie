@@ -44,23 +44,29 @@ public class OProcessComplement {
      * un asociado de negocios, para después reclasificarlos a la cuenta default
      * 
      * @param year
+     * @param ctaMCus
+     * @param ctaMSup
      * @throws SQLException
      * @throws CloneNotSupportedException 
      */
-    public void processComplement(int year) throws SQLException, CloneNotSupportedException {
-        String ctaMCus = "1120-0000-0000";
-        String ctaMSup = "2105-0000-0000";
+    public void processComplement(int year, String ctaMCus, String ctaMSup) throws SQLException, CloneNotSupportedException {
         
         String sql = "SELECT " +
                         "    * " +
-                        "FROM " +
-                        "    fin_rec_ety " +
+                        " FROM " +
+                        "    fin_rec_ety re " +
+                        "        INNER JOIN " +
+                        "    fin_rec r ON re.id_year = r.id_year " +
+                        "        AND re.id_per = r.id_per " +
+                        "        AND re.id_bkc = r.id_bkc " +
+                        "        AND re.id_tp_rec = r.id_tp_rec " +
+                        "        AND re.id_num = r.id_num " +
                         "WHERE " +
-                        "    NOT b_del AND fid_dps_doc_n IS NULL " +
-                        "        AND id_year = " + year + " " +
-                        "        AND fid_bp_nr > 0 AND (fid_acc = '" + ctaMCus + "' " +
-                        "        OR fid_acc = '" + ctaMSup + "') " +
-                        "ORDER BY ts_new ASC , id_per ASC , id_bkc ASC , id_tp_rec ASC , id_num ASC , id_ety ASC";
+                        "    NOT r.b_del AND NOT re.b_del AND fid_dps_doc_n IS NULL " +
+                        "        AND re.id_year = " + year + " " +
+                        "        AND re.fid_bp_nr > 0 AND (re.fid_acc = '" + ctaMCus + "' " +
+                        "        OR re.fid_acc = '" + ctaMSup + "') " +
+                        "ORDER BY r.dt ASC , re.id_per ASC , re.id_bkc ASC , re.id_tp_rec ASC , re.id_num ASC , re.id_ety ASC";
         
         ArrayList<ORecEty> recEtys = new ArrayList();
         
@@ -72,11 +78,12 @@ public class OProcessComplement {
             recEtys.add(recEty);
         }
         
+        String ctaCustomer = "1120-0009-0000";
+        String ctaSupplier = "2105-0009-0000";
+        
         for (ORecEty recEty : recEtys) {
             int[] pkTax = new int[] { 0, 0 };
             // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
-            String ctaCustomer = "1120-0009-0000";
-            String ctaSupplier = "2105-0009-0000";
             
             String cta = "";
             if (recEty.fid_acc.equals(ctaMCus)) {
