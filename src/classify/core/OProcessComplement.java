@@ -24,6 +24,7 @@ public class OProcessComplement {
     DbMySqlConnection c;
     String fileName;
     HashMap<String, Integer> accs;
+    OConfig cfg;
     
     /**
      * Lee la configuración y se conecta con la base de datos para iniciar con el proceso
@@ -32,7 +33,7 @@ public class OProcessComplement {
      */
     public OProcessComplement() throws SQLException {
         OConfigReader cfgReader = new OConfigReader();
-        OConfig cfg = cfgReader.readConfig(); 
+        cfg = cfgReader.readConfig(); 
         c = new DbMySqlConnection(cfg.getSiieConnection().getNameDb(), cfg.getSiieConnection().getHostDb(), cfg.getSiieConnection().getPortDb(), cfg.getSiieConnection().getUserDb(), cfg.getSiieConnection().getPswdDb());
         fileName = OLog.writeFile(null, null, 0, null);
         accs = OProcessDocuments.getAccs(c.connectMySQL());
@@ -49,7 +50,7 @@ public class OProcessComplement {
      * @throws SQLException
      * @throws CloneNotSupportedException 
      */
-    public void processComplement(int year, String ctaMCus, String ctaMSup) throws SQLException, CloneNotSupportedException {
+    public void processComplement(int year) throws SQLException, CloneNotSupportedException {
         
         String sql = "SELECT " +
                         "    * " +
@@ -64,8 +65,8 @@ public class OProcessComplement {
                         "WHERE " +
                         "    NOT r.b_del AND NOT re.b_del AND fid_dps_doc_n IS NULL " +
                         "        AND re.id_year = " + year + " " +
-                        "        AND re.fid_bp_nr > 0 AND (re.fid_acc = '" + ctaMCus + "' " +
-                        "        OR re.fid_acc = '" + ctaMSup + "') " +
+                        "        AND re.fid_bp_nr > 0 AND (re.fid_acc = '" + cfg.getCtaMCustomerReclassFrom() + "' " +
+                        "        OR re.fid_acc = '" + cfg.getCtaMSupplierReclassFrom() + "') " +
                         "ORDER BY r.dt ASC , re.id_per ASC , re.id_bkc ASC , re.id_tp_rec ASC , re.id_num ASC , re.id_ety ASC";
         
         ArrayList<ORecEty> recEtys = new ArrayList();
@@ -78,15 +79,15 @@ public class OProcessComplement {
             recEtys.add(recEty);
         }
         
-        String ctaCustomer = "1120-0009-0000";
-        String ctaSupplier = "2105-0009-0000";
+        String ctaCustomer = cfg.getCtaCustomerReclassDes();
+        String ctaSupplier = cfg.getCtaSupplierReclassDes();
         
         for (ORecEty recEty : recEtys) {
             int[] pkTax = new int[] { 0, 0 };
             // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
             
             String cta = "";
-            if (recEty.fid_acc.equals(ctaMCus)) {
+            if (recEty.fid_acc.equals(cfg.getCtaMCustomerReclassFrom())) {
                 cta = ctaCustomer;
             }
             else {

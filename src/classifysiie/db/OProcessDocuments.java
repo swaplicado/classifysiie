@@ -311,9 +311,11 @@ public class OProcessDocuments {
      * @param docCat
      * @param docClass
      * @param tpAccMovs
+     * @param ctaCus
+     * @param ctaSupp
      * @return 
      */
-    public static ArrayList<OFinRec> getRecs(Connection conn, int idYear, int idDoc, int docCat, int docClass, int tpAccMovs) {
+    public static ArrayList<OFinRec> getRecs(Connection conn, int idYear, int idDoc, int docCat, int docClass, int tpAccMovs, String ctaCus, String ctaSupp) {
         int[] dpsTp = null;
 
         if (docCat == ClassifySiie.CT_SALES) {
@@ -358,7 +360,7 @@ public class OProcessDocuments {
                 + "        AND NOT re.b_del"
                 + "        AND re.fid_ct_sys_mov_xxx = " + dpsTp[0]
                 + "        AND re.fid_tp_sys_mov_xxx = " + dpsTp[1]
-                + "        AND (re.fid_acc LIKE '1120%' OR re.fid_acc LIKE '2105%') "
+                + "        AND (re.fid_acc LIKE '" + ctaCus + "%' OR re.fid_acc LIKE '" + ctaSupp + "%') "
                 + " " + filterSql
                 + " ORDER BY r.id_year ASC, r.dt ASC;";
         

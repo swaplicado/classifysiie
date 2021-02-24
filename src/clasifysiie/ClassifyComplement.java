@@ -24,16 +24,13 @@ public class ClassifyComplement {
             System.out.print("Ingrese el año a reclasificar (complementario): ");
 
             // This method reads the number provided using keyboard
-            int num = scan.nextInt();
+            int year = scan.nextInt();
 
             // Closing Scanner after the use
             scan.close();
             OProcessComplement comp = new OProcessComplement();
             
-            String ctaMCus = "1120-0000-0000";
-            String ctaMSup = "2105-0000-0000";
-
-            comp.processComplement(num, ctaMCus, ctaMSup);
+            comp.processComplement(year);
             
         }
         catch (SQLException ex) {

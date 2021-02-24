@@ -75,15 +75,15 @@ public class ClassifySiie {
             System.out.print("Ingrese el año a reclasificar: ");
 
             // This method reads the number provided using keyboard
-            int num = scan.nextInt();
+            int year = scan.nextInt();
 
             // Closing Scanner after the use
             scan.close();
 
             // Displaying the number 
-            System.out.println("El año ingresado es: " + num);
+            System.out.println("El año ingresado es: " + year);
         
-            core.reclassify(num);
+            core.reclassify(year);
         }
         catch (CloneNotSupportedException ex) {
             Logger.getLogger(ClassifySiie.class.getName()).log(Level.SEVERE, null, ex);

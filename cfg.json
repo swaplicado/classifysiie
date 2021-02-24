@@ -5,5 +5,11 @@
     "hostDb": "localhost",
     "portDb": "3306",
     "nameDb": "erp_sc"
-  }
+  },
+  "ctaMCustomerReclassFrom" : "1120-0000-0000",
+  "ctaMSupplierReclassFrom" : "2105-0000-0000",
+  "ctaCustomerReclassDes" : "1120-0009-0000",
+  "ctaSupplierReclassDes" : "2105-0009-0000",
+  "ctaCustToSearch" : "1120",
+  "ctaSupToSearch" : "2105"
 }

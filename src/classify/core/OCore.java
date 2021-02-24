@@ -47,7 +47,7 @@ public class OCore {
             ArrayList<OEtyTax> etyTaxes = OProcessDocuments.getEtyTaxes(c.connectMySQL(), document.getIdYear(), document.getIdDoc());
             
             // obtener renglones del documento en pólizas
-            ArrayList<OFinRec> recs = OProcessDocuments.getRecs(c.connectMySQL(), document.getIdYear(), document.getIdDoc(), document.getCatDps(), document.getClassDps(), ClassifySiie.TP_DOCUMENTS);
+            ArrayList<OFinRec> recs = OProcessDocuments.getRecs(c.connectMySQL(), document.getIdYear(), document.getIdDoc(), document.getCatDps(), document.getClassDps(), ClassifySiie.TP_DOCUMENTS, cfg.getCtaCustToSearch(), cfg.getCtaSupToSearch());
             
             int[] majTax = new int[] { 0, 0 };
             
@@ -258,7 +258,7 @@ public class OCore {
             
             
             // consultar si el documento tiene pagos
-            ArrayList<OFinRec> payRecs = OProcessDocuments.getRecs(c.connectMySQL(), document.getIdYear(), document.getIdDoc(), document.getCatDps(), document.getClassDps(), ClassifySiie.TP_RECORDS);
+            ArrayList<OFinRec> payRecs = OProcessDocuments.getRecs(c.connectMySQL(), document.getIdYear(), document.getIdDoc(), document.getCatDps(), document.getClassDps(), ClassifySiie.TP_RECORDS, cfg.getCtaCustToSearch(), cfg.getCtaSupToSearch());
             
             if (payRecs.isEmpty()) {
                 continue;
