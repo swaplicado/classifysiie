@@ -17,6 +17,8 @@ public class OConfig {
     protected String ctaSupplierReclassDes;
     protected String ctaCustToSearch;
     protected String ctaSupToSearch;
+    protected int[] reclassTaxCus;
+    protected int[] reclassTaxSupp;
 
     public OConnection getSiieConnection() {
         return siieConnection;
@@ -73,5 +75,21 @@ public class OConfig {
     public void setCtaSupToSearch(String ctaSupToSearch) {
         this.ctaSupToSearch = ctaSupToSearch;
     }
-    
+
+    public int[] getReclassTaxCus() {
+        return reclassTaxCus;
+    }
+
+    public void setReclassTaxCus(int[] reclassTaxCus) {
+        this.reclassTaxCus = reclassTaxCus;
+    }
+
+    public int[] getReclassTaxSupp() {
+        return reclassTaxSupp;
+    }
+
+    public void setReclassTaxSupp(int[] reclassTaxSupp) {
+        this.reclassTaxSupp = reclassTaxSupp;
+    }
+
 }

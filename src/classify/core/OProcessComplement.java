@@ -39,14 +39,11 @@ public class OProcessComplement {
         accs = OProcessDocuments.getAccs(c.connectMySQL());
     }
     
-    
     /**
      * Recibe el año a procesar y consulta los renglones que no tengan un documento y estén relacionados con
      * un asociado de negocios, para después reclasificarlos a la cuenta default
      * 
      * @param year
-     * @param ctaMCus
-     * @param ctaMSup
      * @throws SQLException
      * @throws CloneNotSupportedException 
      */
@@ -63,7 +60,8 @@ public class OProcessComplement {
                         "        AND re.id_tp_rec = r.id_tp_rec " +
                         "        AND re.id_num = r.id_num " +
                         "WHERE " +
-                        "    NOT r.b_del AND NOT re.b_del AND fid_dps_doc_n IS NULL " +
+                        "    NOT r.b_del AND NOT re.b_del " +
+//                        "    AND fid_dps_doc_n IS NULL " +
                         "        AND re.id_year = " + year + " " +
                         "        AND re.fid_bp_nr > 0 AND (re.fid_acc = '" + cfg.getCtaMCustomerReclassFrom() + "' " +
                         "        OR re.fid_acc = '" + cfg.getCtaMSupplierReclassFrom() + "') " +
@@ -83,18 +81,20 @@ public class OProcessComplement {
         String ctaSupplier = cfg.getCtaSupplierReclassDes();
         
         for (ORecEty recEty : recEtys) {
-            int[] pkTax = new int[] { 0, 0 };
+            int[] pkTax = null;
             // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
             
             String cta = "";
             if (recEty.fid_acc.equals(cfg.getCtaMCustomerReclassFrom())) {
                 cta = ctaCustomer;
+                pkTax = cfg.getReclassTaxCus();
             }
             else {
                 cta = ctaSupplier;
+                pkTax = cfg.getReclassTaxSupp();
             }
             
-            SFinAccountConfigEntry accCfg = new SFinAccountConfigEntry(cta, recEty.fid_cc_n, 1, 0, 0);
+            SFinAccountConfigEntry accCfg = new SFinAccountConfigEntry(cta, recEty.fid_cc_n, 1, pkTax[0], pkTax[1]);
             
             this.configureEty(recEty, accCfg);
         }

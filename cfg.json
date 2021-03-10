@@ -6,10 +6,13 @@
     "portDb": "3306",
     "nameDb": "erp_sc"
   },
-  "ctaMCustomerReclassFrom" : "1120-0000-0000",
-  "ctaMSupplierReclassFrom" : "2105-0000-0000",
-  "ctaCustomerReclassDes" : "1120-0009-0000",
-  "ctaSupplierReclassDes" : "2105-0009-0000",
   "ctaCustToSearch" : "1120",
-  "ctaSupToSearch" : "2105"
+  "ctaSupToSearch" : "2105",
+  "ctaMCustomerReclassFrom" : "2120-0000-0000",
+  "ctaCustomerReclassDes" : "2120-0009-0000",
+  "reclassTaxCus" : [ 0, 0 ],
+  "ctaMSupplierReclassFrom" : "1140-0000-0000",
+  "ctaSupplierReclassDes" : "1140-0003-0000",
+  "reclassTaxSupp" : [ 1, 6 ]
+  
 }
