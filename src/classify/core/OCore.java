@@ -374,7 +374,7 @@ public class OCore {
 
                             oPayRecEty.setDt(payFinRec.getDt());
                             
-                            ArrayList<SBalanceTax> newBalances = SMfinUtils.getBalanceByTax(c.connectMySQL(), document.getIdDoc(), document.getIdYear(), recYear, "", 
+                            ArrayList<SBalanceTax> newBalances = SMfinUtils.getBalanceByTax(c.connectMySQL(), document.getIdDoc(), document.getIdYear(),
                                     STrnUtils.getBizPartnerCategoryId(document.getCatDps()) == SDataConstantsSys.BPSS_CT_BP_SUP ? SDataConstantsSys.FINS_TP_SYS_MOV_BPS_SUP[0] : SDataConstantsSys.FINS_TP_SYS_MOV_BPS_CUS[0], 
                                     STrnUtils.getBizPartnerCategoryId(document.getCatDps()) == SDataConstantsSys.BPSS_CT_BP_SUP ? SDataConstantsSys.FINS_TP_SYS_MOV_BPS_SUP[1] : SDataConstantsSys.FINS_TP_SYS_MOV_BPS_CUS[1]);
 
