@@ -52,6 +52,7 @@ public class OProcessDocuments {
                         "    fin_rec_ety " +
                         "WHERE " +
                         "    id_year = " + year + " AND fid_dps_doc_n > 0" +
+//                        "        AND fid_dps_doc_n = 1803" +
                         "        AND fid_dps_adj_doc_n IS NULL" +
                         "        AND NOT b_del;";
         
