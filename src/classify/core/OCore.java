@@ -12,8 +12,7 @@ import classifysiie.db.OConfigReader;
 import classifysiie.db.OProcessDocuments;
 import erp.data.SDataConstantsSys;
 import erp.mfin.data.SFinAccountConfigEntry;
-import erp.mfin.utils.SBalanceTax;
-import erp.mfin.utils.SMfinUtils;
+import erp.mfin.data.SFinBalanceTax;
 import erp.mod.SModSysConsts;
 import erp.mod.trn.db.STrnUtils;
 import java.sql.SQLException;
@@ -42,6 +41,7 @@ public class OCore {
         
         int situation = 0;
         SFinAccountConfigEntry accCfg;
+        int counter = 0;
         for (OTrnDps document : documents) {
             // obtener renglones del documento con impuesto
             ArrayList<OEtyTax> etyTaxes = OProcessDocuments.getEtyTaxes(c.connectMySQL(), document.getIdYear(), document.getIdDoc());
@@ -374,9 +374,10 @@ public class OCore {
 
                             oPayRecEty.setDt(payFinRec.getDt());
                             
-                            ArrayList<SBalanceTax> newBalances = SMfinUtils.getBalanceByTax(c.connectMySQL(), document.getIdDoc(), document.getIdYear(),
+                            ArrayList<SFinBalanceTax> newBalances = erp.mod.fin.db.SFinUtils.getBalanceByTax(c.connectMySQL(), year, document.getIdYear(), document.getIdDoc(),
                                     STrnUtils.getBizPartnerCategoryId(document.getCatDps()) == SDataConstantsSys.BPSS_CT_BP_SUP ? SDataConstantsSys.FINS_TP_SYS_MOV_BPS_SUP[0] : SDataConstantsSys.FINS_TP_SYS_MOV_BPS_CUS[0], 
-                                    STrnUtils.getBizPartnerCategoryId(document.getCatDps()) == SDataConstantsSys.BPSS_CT_BP_SUP ? SDataConstantsSys.FINS_TP_SYS_MOV_BPS_SUP[1] : SDataConstantsSys.FINS_TP_SYS_MOV_BPS_CUS[1]);
+                                    STrnUtils.getBizPartnerCategoryId(document.getCatDps()) == SDataConstantsSys.BPSS_CT_BP_SUP ? SDataConstantsSys.FINS_TP_SYS_MOV_BPS_SUP[1] : SDataConstantsSys.FINS_TP_SYS_MOV_BPS_CUS[1],
+                                    null);
 
                             double creditCur = oPayRecEty.credit_cur;
                             double credit = oPayRecEty.credit;
@@ -386,16 +387,16 @@ public class OCore {
                             boolean wasInserted = false;
                             // consultar el consecutivo más alto de la póliza para hacer la separación por impuesto
                             int max = OProcessDocuments.getMaxRecs(c.connectMySQL(), oPayRecEty);
-                            for (SBalanceTax newBalance : newBalances) {
+                            for (SFinBalanceTax newBalance : newBalances) {
                                 ORecEty balanceEty = (ORecEty) oPayRecEty.clone();
                                 balanceEty.id_ety = ++max;
                                 
                                 newBalance.setBalanceCurrency(Math.abs(newBalance.getBalanceCurrency()));
-                                newBalance.setBalance(Math.abs(newBalance.getBalance()));
+                                newBalance.setBalanceLocal(Math.abs(newBalance.getBalanceLocal()));
 
                                 if (creditCur > 0d) {
                                     if (creditCur >= newBalance.getBalanceCurrency()) {
-                                        balanceEty.credit = newBalance.getBalance();
+                                        balanceEty.credit = newBalance.getBalanceLocal();
                                         balanceEty.credit_cur = newBalance.getBalanceCurrency();
                                     }
                                     else {
@@ -404,11 +405,11 @@ public class OCore {
                                     }
 
                                     creditCur -= newBalance.getBalanceCurrency();
-                                    credit -= newBalance.getBalance();
+                                    credit -= newBalance.getBalanceLocal();
                                 }
                                 else if (debitCur > 0d) {
                                     if (debitCur >= newBalance.getBalanceCurrency()) {
-                                        balanceEty.debit = newBalance.getBalance();
+                                        balanceEty.debit = newBalance.getBalanceLocal();
                                         balanceEty.debit_cur = newBalance.getBalanceCurrency();
                                     }
                                     else {
@@ -417,7 +418,7 @@ public class OCore {
                                     }
 
                                     debitCur -= newBalance.getBalanceCurrency();
-                                    debit -= newBalance.getBalance();
+                                    debit -= newBalance.getBalanceLocal();
                                 }
                                 else {
                                     break;
@@ -426,7 +427,7 @@ public class OCore {
                                 // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
                                 Object[] result2 = OProcessDocuments.readCfg(
                                         document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), balanceEty.id_bkc,
-                                        document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), newBalance.getTaxPk(), (c.connectMySQL()).createStatement());
+                                        document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), newBalance.getTaxKey(), (c.connectMySQL()).createStatement());
 
                                 if (result2 == null) {
                                     return;
@@ -437,8 +438,8 @@ public class OCore {
                                 balanceEty.fk_acc = accs.get(accConf.getAccountId());
                                 balanceEty.fid_acc = accConf.getAccountId();
                                 balanceEty.fid_cc_n = accConf.getCostCenterId();
-                                balanceEty.fid_tax_bas_n = newBalance.getTaxPk()[0];
-                                balanceEty.fid_tax_n = newBalance.getTaxPk()[1];
+                                balanceEty.fid_tax_bas_n = newBalance.getTaxBasicId();
+                                balanceEty.fid_tax_n = newBalance.getTaxId();
 
                                 OProcessDocuments.insertRecEty(c.connectMySQL(), balanceEty, fileName);
                                 wasInserted = true;
@@ -476,6 +477,8 @@ public class OCore {
                 }
             }
             
+            counter++;
+            System.out.println(100 * counter / documents.size() + "%");
         }
     }
     

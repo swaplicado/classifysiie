@@ -47,12 +47,13 @@ public class OProcessDocuments {
          */
         
         String recDocsSql = "SELECT " +
-                        "   DISTINCT CONCAT_WS('_', fid_dps_doc_n, fid_dps_year_n) AS doc_key " +
+                        "   DISTINCT CONCAT_WS('_', fid_dps_year_n, fid_dps_doc_n) AS doc_key " +
                         "FROM " +
                         "    fin_rec_ety " +
                         "WHERE " +
-                        "    id_year = " + year + " AND fid_dps_doc_n > 0" +
-//                        "        AND fid_dps_doc_n = 1803" +
+                        "    id_year = " + year + 
+                        "        AND fid_dps_doc_n > 0" +
+//                        "        AND fid_dps_doc_n = 9929" +
                         "        AND fid_dps_adj_doc_n IS NULL" +
                         "        AND NOT b_del;";
         
@@ -78,7 +79,7 @@ public class OProcessDocuments {
          */
         
         String recAdjSql = "SELECT " +
-                        "   DISTINCT CONCAT_WS('_', fid_dps_adj_doc_n, fid_dps_adj_year_n) AS doc_key " +
+                        "   DISTINCT CONCAT_WS('_', fid_dps_adj_year_n, fid_dps_adj_doc_n) AS doc_key " +
                         "FROM " +
                         "    fin_rec_ety " +
                         "WHERE " +
@@ -127,8 +128,8 @@ public class OProcessDocuments {
                 "FROM " +
                 "    trn_dps td " +
                 "WHERE " +
-                "    CONCAT_WS('_', td.id_doc, td.id_year) IN (" + docs.toString() + ");  ";
-//                "    CONCAT_WS('_', td.id_doc, td.id_year) IN ('5009_2018', '5864_2018');  ";
+                "    CONCAT_WS('_', td.id_year, td.id_doc) IN (" + docs.toString() + ");  ";
+//                "    CONCAT_WS('_', td.id_year, td.id_doc) IN ('2022_10322');  ";
 
         try {
             Statement st2 = conn.createStatement();
@@ -139,8 +140,8 @@ public class OProcessDocuments {
             while (res2.next()) {
                 dps = new OTrnDps();
                 
-                dps.setIdDoc(res2.getInt("id_doc"));
                 dps.setIdYear(res2.getInt("id_year"));
+                dps.setIdDoc(res2.getInt("id_doc"));
                 dps.setDt(res2.getDate("dt"));
                 dps.setTaxesCount(res2.getInt("taxes"));
                 dps.setEtis(res2.getInt("etis"));
