@@ -32,7 +32,7 @@ public class OCore {
     
     public void reclassify(final int year) throws CloneNotSupportedException, SQLException {
         OConfigReader cfgReader = new OConfigReader();
-        OConfig cfg = cfgReader.readConfig(); 
+        OConfig cfg = cfgReader.readConfig();
         DbMySqlConnection c = new DbMySqlConnection(cfg.getSiieConnection().getNameDb(), cfg.getSiieConnection().getHostDb(), cfg.getSiieConnection().getPortDb(), cfg.getSiieConnection().getUserDb(), cfg.getSiieConnection().getPswdDb());
         ArrayList<OTrnDps> documents = OProcessDocuments.getDocuments(c.connectMySQL(), year);
         
@@ -392,11 +392,11 @@ public class OCore {
                                 balanceEty.id_ety = ++max;
                                 
                                 newBalance.setBalanceCurrency(Math.abs(newBalance.getBalanceCurrency()));
-                                newBalance.setBalanceLocal(Math.abs(newBalance.getBalanceLocal()));
+                                newBalance.setBalanceLocal(Math.abs(newBalance.getBalance()));
 
                                 if (creditCur > 0d) {
                                     if (creditCur >= newBalance.getBalanceCurrency()) {
-                                        balanceEty.credit = newBalance.getBalanceLocal();
+                                        balanceEty.credit = newBalance.getBalance();
                                         balanceEty.credit_cur = newBalance.getBalanceCurrency();
                                     }
                                     else {
@@ -405,11 +405,11 @@ public class OCore {
                                     }
 
                                     creditCur -= newBalance.getBalanceCurrency();
-                                    credit -= newBalance.getBalanceLocal();
+                                    credit -= newBalance.getBalance();
                                 }
                                 else if (debitCur > 0d) {
                                     if (debitCur >= newBalance.getBalanceCurrency()) {
-                                        balanceEty.debit = newBalance.getBalanceLocal();
+                                        balanceEty.debit = newBalance.getBalance();
                                         balanceEty.debit_cur = newBalance.getBalanceCurrency();
                                     }
                                     else {
@@ -418,7 +418,7 @@ public class OCore {
                                     }
 
                                     debitCur -= newBalance.getBalanceCurrency();
-                                    debit -= newBalance.getBalanceLocal();
+                                    debit -= newBalance.getBalance();
                                 }
                                 else {
                                     break;

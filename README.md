@@ -19,6 +19,8 @@ Este es el archivo de configuración:
     "reclassTaxSupp" : [ 1, 6 ]
 ```
 
+## Solo estas dos cuentas son necesarias para el proceso principal (no las modifico)
+
 **ctaCustToSearch** Se refeiere a la cuenta contable desde la cuál hará la
 búsqueda para comenzar la clasificación de clientes.
 
@@ -40,5 +42,7 @@ búsqueda para comenzar la clasificación de proveedores.
 **reclassTaxSupp** Llave del impuesto al cual serán movidos los saldos de proveedores.
 
 ## **NOTA:**
-Se corre el proceso normal con el año a reclasificar y en vez de correr 
-el complemento se corren las querys de UPDATE
+-Se corre el proceso normal con el año a reclasificar
+-En vez de correr el complemento se corren las querys de UPDATE
+-Se corre la clase **ClassifyGrouper** para agrupar todas las partidas de las pólizas 
+que quedaron separadas teniendo el mismo impuesto

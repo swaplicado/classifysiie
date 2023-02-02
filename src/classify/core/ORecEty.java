@@ -95,12 +95,21 @@ public class ORecEty implements Cloneable {
         this.dt = dt;
     }
     
+    public int auxDpsYear;
+    public int auxDpsDoc;
+    public int auxDpsAdjYear;
+    public int auxDpsAdjDoc;
+    public double auxDebitLocal;
+    public double auxCreditLocal;
+    public double auxDebitCur;
+    public double auxCreditCur;
+    public int auxEtys;
+    
     // Overriding clone() method 
     // by simply calling Object class 
     // clone() method. 
     @Override
-    protected Object clone() 
-        throws CloneNotSupportedException 
+    protected Object clone() throws CloneNotSupportedException 
     { 
         return super.clone();
     }

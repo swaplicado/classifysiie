@@ -688,8 +688,6 @@ public class OProcessDocuments {
      * @throws java.sql.SQLException 
      */
     public static boolean deleteRecEty(Connection conn, ORecEty recEty, String fileName) throws SQLException {
-        
-        
         String sql = "UPDATE fin_rec_ety " +
                     " SET " +
                     " b_del = " + recEty.b_del + " " +
