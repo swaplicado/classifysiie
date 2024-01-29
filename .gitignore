@@ -5,3 +5,5 @@
 build.xml
 *.driveupload
 /dist/
+FinClassify/
+cfg.json

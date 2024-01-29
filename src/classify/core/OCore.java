@@ -17,6 +17,8 @@ import erp.mod.SModSysConsts;
 import erp.mod.trn.db.STrnUtils;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -39,15 +41,26 @@ public class OCore {
         fileName = OLog.writeFile(null, null, 0, null);
         accs = OProcessDocuments.getAccs(c.connectMySQL());
         
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, Calendar.JANUARY);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+
+        // Obtener un objeto Date a partir de la instancia de Calendar
+        Date firstDayOfYear = calendar.getTime();
+        
         int situation = 0;
         SFinAccountConfigEntry accCfg;
         int counter = 0;
         for (OTrnDps document : documents) {
+            counter++;
+            System.out.println(100 * counter / documents.size() + "%");
+            
             // obtener renglones del documento con impuesto
             ArrayList<OEtyTax> etyTaxes = OProcessDocuments.getEtyTaxes(c.connectMySQL(), document.getIdYear(), document.getIdDoc());
             
             // obtener renglones del documento en pólizas
-            ArrayList<OFinRec> recs = OProcessDocuments.getRecs(c.connectMySQL(), document.getIdYear(), document.getIdDoc(), document.getCatDps(), document.getClassDps(), ClassifySiie.TP_DOCUMENTS, cfg.getCtaCustToSearch(), cfg.getCtaSupToSearch());
+            ArrayList<OFinRec> recs = OProcessDocuments.getRecs(c.connectMySQL(), year, document.getIdYear(), document.getIdDoc(), document.getCatDps(), document.getClassDps(), ClassifySiie.TP_DOCUMENTS, cfg.getCtaCustToSearch(), cfg.getCtaSupToSearch());
             
             int[] majTax = new int[] { 0, 0 };
             
@@ -96,7 +109,7 @@ public class OCore {
                         // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
                         Object[] result = OProcessDocuments.readCfg(
                                 document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), etyTax.getIdBkc(),
-                                document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), pkTax, (c.connectMySQL()).createStatement());
+                                firstDayOfYear, SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), pkTax, (c.connectMySQL()).createStatement());
 
                         if (result == null) {
                             return;
@@ -178,9 +191,9 @@ public class OCore {
                 }
             }
             else {
-                if (recs.size() > 1 && document.getClassDps() != ClassifySiie.TRNU_TP_DPS_SAL_CN[1]) {
-                    continue;
-                }
+//                if (recs.size() > 1) {
+//                    continue;
+//                }
                 
                 for (OFinRec etyRec : recs) {
                     boolean isNewEty = false;
@@ -192,7 +205,7 @@ public class OCore {
                         // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
                         Object[] result = OProcessDocuments.readCfg(
                                 document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), etyRec.getIdBkc(),
-                                document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), null, (c.connectMySQL()).createStatement());
+                                firstDayOfYear, SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), null, (c.connectMySQL()).createStatement());
 
                         if (result == null) {
                             return;
@@ -217,7 +230,7 @@ public class OCore {
                         // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
                         Object[] result = OProcessDocuments.readCfg(
                                 document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), etyRec.getIdBkc(),
-                                document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), pkTax, (c.connectMySQL()).createStatement());
+                                firstDayOfYear, SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), pkTax, (c.connectMySQL()).createStatement());
 
                         if (result == null) {
                             return;
@@ -258,7 +271,7 @@ public class OCore {
             
             
             // consultar si el documento tiene pagos
-            ArrayList<OFinRec> payRecs = OProcessDocuments.getRecs(c.connectMySQL(), document.getIdYear(), document.getIdDoc(), document.getCatDps(), document.getClassDps(), ClassifySiie.TP_RECORDS, cfg.getCtaCustToSearch(), cfg.getCtaSupToSearch());
+            ArrayList<OFinRec> payRecs = OProcessDocuments.getRecs(c.connectMySQL(), year, document.getIdYear(), document.getIdDoc(), document.getCatDps(), document.getClassDps(), ClassifySiie.TP_RECORDS, cfg.getCtaCustToSearch(), cfg.getCtaSupToSearch());
             
             if (payRecs.isEmpty()) {
                 continue;
@@ -292,7 +305,7 @@ public class OCore {
                         // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
                         Object[] result = OProcessDocuments.readCfg(
                                 document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), yearPayRecs.get(0).getIdBkc(),
-                                document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), null, (c.connectMySQL()).createStatement());
+                                firstDayOfYear, SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), null, (c.connectMySQL()).createStatement());
 
                         if (result == null) {
                             return;
@@ -331,7 +344,7 @@ public class OCore {
                             // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
                             Object[] result1 = OProcessDocuments.readCfg(
                                     document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), payRec.getIdBkc(),
-                                    document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), pkTax, (c.connectMySQL()).createStatement());
+                                    firstDayOfYear, SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), pkTax, (c.connectMySQL()).createStatement());
 
 
                             if (result1 == null) {
@@ -427,7 +440,7 @@ public class OCore {
                                 // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
                                 Object[] result2 = OProcessDocuments.readCfg(
                                         document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), balanceEty.id_bkc,
-                                        document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), newBalance.getTaxKey(), (c.connectMySQL()).createStatement());
+                                        firstDayOfYear, SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), newBalance.getTaxKey(), (c.connectMySQL()).createStatement());
 
                                 if (result2 == null) {
                                     return;
@@ -455,7 +468,7 @@ public class OCore {
                                 // consultar la configuración de la cuenta contable correspondiente al impuesto del monto
                                 Object[] result2 = OProcessDocuments.readCfg(
                                         document.getIdBp(), STrnUtils.getBizPartnerCategoryId(document.getCatDps()), balanceEty.id_bkc,
-                                        document.getDt(), SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), majTax, (c.connectMySQL()).createStatement());
+                                        firstDayOfYear, SDataConstantsSys.FINS_TP_ACC_BP_OP, SModSysConsts.BPSS_CT_BP_CUS == document.getCatDps(), majTax, (c.connectMySQL()).createStatement());
 
                                 if (result2 == null) {
                                     return;
@@ -476,9 +489,6 @@ public class OCore {
                         break;
                 }
             }
-            
-            counter++;
-            System.out.println(100 * counter / documents.size() + "%");
         }
     }
     
